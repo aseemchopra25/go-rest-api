@@ -23,7 +23,10 @@ type album struct {
 
 func main() {
 	router := gin.Default()
+	// Gin allows associating the handler with an HTTP method and path combination
+	// This way you can separately route requests sent to a single path based on the method being used by the client
 	router.GET("/albums", getAlbums)
+	router.POST("/albums", postAlbums)
 	router.Run("localhost:8080")
 
 }
@@ -43,4 +46,18 @@ var albums = []album{
 
 func getAlbums(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, albums)
+}
+
+func postAlbums(c *gin.Context) {
+	var newAlbum album
+	// Call bindJSON to bind the received JSON to newalbum
+	// This binds the request body to newAlbum
+	// StatusCreated is a 201 status code along with the JSON
+	if err := c.BindJSON(&newAlbum); err != nil {
+		return
+	}
+
+	albums = append(albums, newAlbum)
+	c.IndentedJSON(http.StatusCreated, newAlbum)
+
 }
