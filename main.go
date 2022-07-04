@@ -22,10 +22,13 @@ type album struct {
 // Run function is used to attach the router to an http.Server and start the server
 
 func main() {
+
 	router := gin.Default()
 	// Gin allows associating the handler with an HTTP method and path combination
 	// This way you can separately route requests sent to a single path based on the method being used by the client
 	router.GET("/albums", getAlbums)
+	// associate :id for handler
+	router.GET("/albums/:id", getAlbumByID)
 	router.POST("/albums", postAlbums)
 	router.Run("localhost:8080")
 
@@ -60,4 +63,20 @@ func postAlbums(c *gin.Context) {
 	albums = append(albums, newAlbum)
 	c.IndentedJSON(http.StatusCreated, newAlbum)
 
+}
+
+func getAlbumByID(c *gin.Context) {
+	// Context.Param retrieves the id path from the url; when we map this handler to a path, we include the placeholder for the parameter in path
+	id := c.Param("id")
+	// Loop over albums looking for matching id parameter value
+	// Serialize that album struct to JSON and return with 200 OK response
+	// In the real world, a daabase query would be used to perform this lookup
+	// 404 Error with http.StatusNotFound if album isn't found
+	for _, a := range albums {
+		if a.ID == id {
+			c.IndentedJSON(http.StatusOK, a)
+			return
+		}
+	}
+	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Album not found!"})
 }
